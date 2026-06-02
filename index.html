@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penzión GEJDÁK – Ubytovanie Ružomberok | Liptov</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--accent:#C8922A;--bg:#080401;--font-head:'Playfair Display',serif;--font-body:'Lato',sans-serif}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:#f5ede0;font-family:var(--font-body);overflow-x:hidden}
+
+  /* PROGRESS BAR */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0%;background:linear-gradient(90deg,#C8922A,#E8B84B);z-index:9999;transition:width 0.1s}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;transition:all 0.4s}
+  nav.scrolled{background:rgba(8,4,1,0.92);backdrop-filter:blur(12px);padding:12px 40px;box-shadow:0 2px 20px rgba(0,0,0,0.5)}
+  .nav-logo{font-family:var(--font-head);font-size:1.4rem;color:#E8B84B;letter-spacing:1px}
+  .nav-cta{background:var(--accent);color:#080401;padding:9px 22px;border-radius:25px;font-weight:700;font-size:0.85rem;text-decoration:none;letter-spacing:0.5px;transition:all 0.3s}
+  .nav-cta:hover{background:#E8B84B;transform:scale(1.05)}
+
+  /* NAV DOTS */
+  #nav-dots{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:1000;display:flex;flex-direction:column;gap:10px}
+  .dot{width:9px;height:9px;border-radius:50%;background:rgba(200,146,42,0.35);border:1.5px solid rgba(200,146,42,0.6);cursor:pointer;transition:all 0.3s}
+  .dot.active{background:#C8922A;transform:scale(1.4)}
+
+  /* CANVAS */
+  #bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+  /* SCENES */
+  .scene{height:500vh;position:relative}
+  .sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .scene-content{opacity:0;transform:translateY(30px);transition:opacity 0.9s ease,transform 0.9s ease;position:relative;z-index:10;width:100%;max-width:1100px;padding:0 40px}
+  .scene-content.active{opacity:1;transform:translateY(0)}
+
+  /* SCENE 1 */
+  .badge{display:inline-block;background:rgba(200,146,42,0.18);border:1px solid rgba(200,146,42,0.5);color:#E8B84B;padding:6px 18px;border-radius:20px;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+  .s1-title{font-family:var(--font-head);font-size:clamp(2.8rem,7vw,6rem);line-height:1.05;color:#fff;margin-bottom:20px}
+  .s1-title span{color:#C8922A}
+  .divider{width:80px;height:3px;background:linear-gradient(90deg,#C8922A,#E8B84B);margin:20px 0;border-radius:2px}
+  .s1-desc{font-size:clamp(1rem,1.8vw,1.25rem);color:rgba(245,237,224,0.8);max-width:600px;line-height:1.8;margin-bottom:36px}
+  .btn-group{display:flex;gap:16px;flex-wrap:wrap}
+  .btn-primary{background:linear-gradient(135deg,#C8922A,#E8B84B);color:#080401;padding:14px 36px;border-radius:30px;font-weight:700;font-size:1rem;text-decoration:none;transition:all 0.3s;border:none;cursor:pointer}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(200,146,42,0.4)}
+  .btn-outline{border:2px solid rgba(200,146,42,0.6);color:#E8B84B;padding:14px 36px;border-radius:30px;font-weight:600;font-size:1rem;text-decoration:none;transition:all 0.3s}
+  .btn-outline:hover{background:rgba(200,146,42,0.1);border-color:#C8922A}
+
+  /* SCENE 2 - PRIBEH */
+  .story-label{font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;color:#C8922A;margin-bottom:12px}
+  .story-title{font-family:var(--font-head);font-size:clamp(2rem,4vw,3.2rem);color:#fff;margin-bottom:28px;line-height:1.2}
+  .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+  .story-text p{color:rgba(245,237,224,0.8);line-height:1.85;font-size:1.05rem;margin-bottom:18px}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .stat-card{background:rgba(200,146,42,0.1);border:1px solid rgba(200,146,42,0.25);border-radius:12px;padding:22px;text-align:center}
+  .stat-num{font-family:var(--font-head);font-size:2.6rem;color:#E8B84B;font-weight:700;display:block}
+  .stat-label{font-size:0.8rem;color:rgba(245,237,224,0.6);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+  /* SCENE 3 - SLUZBY */
+  .services-header{text-align:center;margin-bottom:48px}
+  .services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .service-card{background:rgba(255,255,255,0.04);border:1px solid rgba(200,146,42,0.2);border-radius:16px;padding:28px 22px;transition:all 0.35s;cursor:default}
+  .service-card:hover{background:rgba(200,146,42,0.09);border-color:rgba(200,146,42,0.5);transform:translateY(-4px)}
+  .service-emoji{font-size:2.4rem;margin-bottom:14px;display:block}
+  .service-name{font-family:var(--font-head);font-size:1.2rem;color:#fff;margin-bottom:8px}
+  .service-desc{font-size:0.88rem;color:rgba(245,237,224,0.65);line-height:1.6;margin-bottom:12px}
+  .service-price{font-weight:700;color:#C8922A;font-size:0.95rem}
+
+  /* SCENE 4 - FILOZOFIA */
+  .philosophy-wrap{text-align:center;max-width:800px;margin:0 auto}
+  blockquote{font-family:var(--font-head);font-size:clamp(1.5rem,3.5vw,2.6rem);color:#fff;line-height:1.4;font-style:italic;margin-bottom:32px;position:relative}
+  blockquote::before{content:'"';font-size:6rem;color:rgba(200,146,42,0.2);position:absolute;top:-20px;left:-20px;line-height:1;font-family:var(--font-head)}
+  .phil-text{font-size:1.1rem;color:rgba(245,237,224,0.75);line-height:1.85;margin-bottom:32px}
+  .values-row{display:flex;justify-content:center;gap:30px;flex-wrap:wrap}
+  .value-chip{background:rgba(200,146,42,0.12);border:1px solid rgba(200,146,42,0.3);color:#E8B84B;padding:9px 22px;border-radius:25px;font-size:0.88rem;letter-spacing:0.5px}
+
+  /* SCENE 5 - KONTAKT */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+  .contact-title{font-family:var(--font-head);font-size:clamp(1.8rem,3.5vw,2.8rem);color:#fff;margin-bottom:30px}
+  .contact-item{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px}
+  .contact-icon{font-size:1.5rem;min-width:38px}
+  .contact-info strong{color:#E8B84B;font-size:0.78rem;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:3px}
+  .contact-info span,.contact-info a{color:rgba(245,237,224,0.8);font-size:0.97rem;text-decoration:none;line-height:1.5}
+  .contact-info a:hover{color:#C8922A}
+  .cta-buttons{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+  .btn-whatsapp{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:15px 30px;border-radius:30px;font-weight:700;font-size:1rem;text-decoration:none;text-align:center;transition:all 0.3s}
+  .btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(37,211,102,0.35)}
+  .btn-call{background:rgba(200,146,42,0.15);border:2px solid #C8922A;color:#E8B84B;padding:15px 30px;border-radius:30px;font-weight:700;font-size:1rem;text-decoration:none;text-align:center;transition:all 0.3s}
+  .btn-call:hover{background:rgba(200,146,42,0.25)}
+  .contact-box{background:rgba(200,146,42,0.07);border:1px solid rgba(200,146,42,0.2);border-radius:20px;padding:36px}
+
+  /* MASCOT */
+  #mascot-wrap{position:fixed;bottom:50px;left:50px;z-index:2000;width:80px;cursor:pointer;user-select:none}
+  #mascot-svg{width:80px;height:80px;filter:drop-shadow(0 4px 12px rgba(200,146,42,0.4))}
+  #speech-bubble{position:absolute;bottom:90px;left:0;background:#fff;color:#080401;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transform:translateY(6px);transition:all 0.4s;max-width:200px;white-space:normal;line-height:1.4}
+  #speech-bubble::after{content:'';position:absolute;bottom:-8px;left:14px;border:8px solid transparent;border-top-color:#fff;border-bottom:none}
+
+  @media(max-width:768px){
+    nav{padding:14px 20px}
+    nav.scrolled{padding:10px 20px}
+    .nav-logo{font-size:1.1rem}
+    .scene-content{padding:0 20px}
+    .story-grid{grid-template-columns:1fr}
+    .stats-grid{grid-template-columns:1fr 1fr}
+    .services-grid{grid-template-columns:1fr 1fr}
+    .contact-grid{grid-template-columns:1fr}
+    .contact-box{display:none}
+    #mascot-wrap{width:56px;bottom:20px;left:auto;right:16px}
+    #mascot-svg{width:56px;height:56px}
+    #speech-bubble{font-size:0.7rem;left:auto;right:0;border-radius:14px 14px 4px 14px}
+    #speech-bubble::after{left:auto;right:14px}
+    .s1-title{font-size:clamp(2rem,8vw,3.5rem)}
+    .btn-group{gap:10px}
+    .btn-primary,.btn-outline{padding:12px 24px;font-size:0.9rem}
+    #nav-dots{right:10px}
+    .dot{width:7px;height:7px}
+    .story-title{font-size:clamp(1.6rem,5vw,2.4rem)}
+    blockquote{font-size:clamp(1.2rem,4vw,1.8rem)}
+    blockquote::before{font-size:4rem}
+    .contact-title{font-size:1.8rem}
+    .services-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav id="main-nav">
+  <div class="nav-logo">GEJDÁK</div>
+  <a href="#scene5" class="nav-cta">Rezervovať</a>
+</nav>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="nav-dots">
+  <div class="dot active" data-scene="0" title="Vstup"></div>
+  <div class="dot" data-scene="1" title="Príbeh"></div>
+  <div class="dot" data-scene="2" title="Služby"></div>
+  <div class="dot" data-scene="3" title="Filozofia"></div>
+  <div class="dot" data-scene="4" title="Kontakt"></div>
+</div>
+
+<!-- MASCOT -->
+<div id="mascot-wrap">
+  <div id="speech-bubble">Vitajte na Liptove! 🏔️</div>
+  <svg id="mascot-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <!-- Chef body -->
+    <ellipse cx="50" cy="90" rx="28" ry="22" fill="#f5ede0"/>
+    <!-- Apron -->
+    <ellipse cx="50" cy="93" rx="18" ry="16" fill="#fff"/>
+    <rect x="44" y="78" width="12" height="30" rx="6" fill="#fff"/>
+    <!-- Arms -->
+    <ellipse cx="20" cy="88" rx="8" ry="5" fill="#f5ede0" transform="rotate(-20,20,88)"/>
+    <ellipse cx="80" cy="88" rx="8" ry="5" fill="#f5ede0" transform="rotate(20,80,88)"/>
+    <!-- Ladle in right hand -->
+    <line x1="83" y1="82" x2="95" y2="68" stroke="#C8922A" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="95" cy="65" r="6" fill="none" stroke="#C8922A" stroke-width="2.5"/>
+    <!-- Head -->
+    <ellipse cx="50" cy="56" rx="22" ry="20" fill="#f5ede0"/>
+    <!-- Rosy cheeks -->
+    <circle cx="36" cy="60" r="5" fill="rgba(220,100,80,0.3)"/>
+    <circle cx="64" cy="60" r="5" fill="rgba(220,100,80,0.3)"/>
+    <!-- Eyes with pupils -->
+    <circle cx="43" cy="52" r="5" fill="#fff"/>
+    <circle cx="57" cy="52" r="5" fill="#fff"/>
+    <circle cx="43" cy="53" r="2.5" fill="#3a2010"/>
+    <circle cx="57" cy="53" r="2.5" fill="#3a2010"/>
+    <circle cx="44" cy="52" r="1" fill="#fff"/>
+    <circle cx="58" cy="52" r="1" fill="#fff"/>
+    <!-- Smile -->
+    <path d="M 40 65 Q 50 73 60 65" stroke="#c0654a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Mustache -->
+    <path d="M 41 62 Q 46 65 50 62 Q 54 65 59 62" stroke="#8b5030" stroke-width="2" fill="none"/>
+    <!-- White chef toque -->
+    <ellipse cx="50" cy="38" rx="22" ry="8" fill="#fff"/>
+    <rect x="34" y="14" width="32" height="26" rx="10" fill="#fff"/>
+    <ellipse cx="50" cy="14" rx="16" ry="6" fill="#f0f0f0"/>
+    <!-- Toque stripes -->
+    <line x1="40" y1="18" x2="40" y2="38" stroke="rgba(200,146,42,0.3)" stroke-width="1.5"/>
+    <line x1="50" y1="16" x2="50" y2="38" stroke="rgba(200,146,42,0.3)" stroke-width="1.5"/>
+    <line x1="60" y1="18" x2="60" y2="38" stroke="rgba(200,146,42,0.3)" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<!-- SCENE 1: VSTUP -->
+<div class="scene" id="scene0">
+  <div class="sticky">
+    <div class="scene-content" id="sc0">
+      <div class="badge">🏔️ Ružomberok · Liptov · Penzión***</div>
+      <h1 class="s1-title">Penzión<br><span>GEJDÁK</span></h1>
+      <div class="divider"></div>
+      <p class="s1-desc">Horský penzión v krásnej prírode Liptova pri Vlkolínci. Rodinná atmosféra, bazén zadarmo, wellness, ihriská a jazda na koni — všetko na jednom mieste.</p>
+      <div class="btn-group">
+        <a href="tel:+421903437394" class="btn-primary">📞 Zavolať a rezervovať</a>
+        <a href="#scene2" class="btn-outline">Zistiť viac ↓</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 2: PRIBEH -->
+<div class="scene" id="scene1">
+  <div class="sticky">
+    <div class="scene-content" id="sc1">
+      <div class="story-label">Náš príbeh</div>
+      <h2 class="story-title">Viac než len ubytovanie —<br>zážitok uprostred Liptova</h2>
+      <div class="story-grid">
+        <div class="story-text">
+          <p>Penzión GEJDÁK sa nachádza v lone prírody na Ceste na Vlkolínec, kúsok od historického Ružomberka. V tichom prostredí Liptova ponúkame útočisko pre rodiny, turistov, lyžiarov aj firemné skupiny.</p>
+          <p>Naše trojhviezdičkové ubytovanie spája komfort klasických izieb a rodinných apartmánov s bohatou ponukou aktivít — od krytého bazéna a fínskej sauny až po jazdu na koni a kontaktnú ZOO pre najmenších.</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-num" data-target="6">0</span>
+            <span class="stat-label">Apartmánových izieb</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num" data-target="2">0</span>
+            <span class="stat-label">Rodinné apartmány</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num" data-target="5">0</span>
+            <span class="stat-label">Typov izieb</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num" data-target="30">0</span>
+            <span class="stat-label">od € / noc</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 3: SLUZBY -->
+<div class="scene" id="scene2">
+  <div class="sticky">
+    <div class="scene-content" id="sc2">
+      <div class="services-header">
+        <div class="story-label">Čo ponúkame</div>
+        <h2 class="story-title" style="text-align:center">Naše služby</h2>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <span class="service-emoji">🛏️</span>
+          <div class="service-name">Ubytovanie</div>
+          <div class="service-desc">Klasické izby, apartmánové izby aj rodinné apartmány. Bazén + ihriská v cene pobytu.</div>
+          <div class="service-price">od 30 € / os. / noc</div>
+        </div>
+        <div class="service-card">
+          <span class="service-emoji">🧖</span>
+          <div class="service-name">Wellness</div>
+          <div class="service-desc">Fínska sauna, vírivka a krytý bazén. Ideálny relax po výlete do Nízkych Tatier.</div>
+          <div class="service-price">od 10 € / 2 hod.</div>
+        </div>
+        <div class="service-card">
+          <span class="service-emoji">🍽️</span>
+          <div class="service-name">Stravovanie</div>
+          <div class="service-desc">Raňajky, polpenzia alebo plná penzia. Domáca kuchyňa s liptovskými špecialistami.</div>
+          <div class="service-price">Polpenzia 22 €</div>
+        </div>
+        <div class="service-card">
+          <span class="service-emoji">🐴</span>
+          <div class="service-name">Aktivity & Farma</div>
+          <div class="service-desc">Jazda na koni, kontaktná ZOO, tenis, futbal, plážový volejbal a školy v prírode.</div>
+          <div class="service-price">Na vyžiadanie</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 4: FILOZOFIA -->
+<div class="scene" id="scene3">
+  <div class="sticky">
+    <div class="scene-content" id="sc3">
+      <div class="philosophy-wrap">
+        <div class="story-label">Naša filozofia</div>
+        <blockquote>Príroda, pohoda a rodinná atmosféra — to je GEJDÁK</blockquote>
+        <p class="phil-text">Veríme, že dovolenka má byť plná zážitkov. Preto sme okolo nášho penziónu vybudovali kompletný areál — nielen pre odpočinok, ale pre aktívny pobyt celej rodiny. Každý hosť je pre nás výnimočný a dostáva individuálnu starostlivosť.</p>
+        <div class="values-row">
+          <div class="value-chip">🌲 Príroda</div>
+          <div class="value-chip">👨‍👩‍👧 Rodina</div>
+          <div class="value-chip">⭐ Kvalita</div>
+          <div class="value-chip">🏔️ Liptov</div>
+          <div class="value-chip">😊 Pohostinnosť</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 5: KONTAKT -->
+<div class="scene" id="scene4">
+  <div class="sticky">
+    <div class="scene-content" id="sc4">
+      <div class="contact-grid">
+        <div>
+          <h2 class="contact-title">Príďte k nám<br><span style="color:#C8922A">na Liptov</span></h2>
+          <div class="contact-item">
+            <div class="contact-icon">📍</div>
+            <div class="contact-info">
+              <strong>Adresa</strong>
+              <span>Cesta na Vlkolínec, 034 01 Ružomberok, Slovensko</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">📞</div>
+            <div class="contact-info">
+              <strong>Telefón</strong>
+              <a href="tel:+421903437394">+421 903 437 394</a><br>
+              <a href="tel:+421908961182">+421 908 961 182</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">✉️</div>
+            <div class="contact-info">
+              <strong>Email</strong>
+              <a href="mailto:info@penziongejdak.sk">info@penziongejdak.sk</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">🌐</div>
+            <div class="contact-info">
+              <strong>Web</strong>
+              <span>www.penziongejdak.sk</span>
+            </div>
+          </div>
+          <div class="cta-buttons" style="flex-direction:row;flex-wrap:wrap;margin-top:28px">
+            <a href="https://wa.me/421903437394" class="btn-whatsapp">💬 WhatsApp</a>
+            <a href="tel:+421903437394" class="btn-call">📞 Zavolať</a>
+          </div>
+        </div>
+        <div class="contact-box">
+          <div style="font-family:var(--font-head);font-size:1.5rem;color:#fff;margin-bottom:20px">Rýchla rezervácia</div>
+          <div style="color:rgba(245,237,224,0.7);font-size:0.95rem;line-height:1.8;margin-bottom:24px">
+            Zavolajte nám alebo napíšte email — radi vám pomôžeme s výberom izby a termínu.
+          </div>
+          <div style="background:rgba(200,146,42,0.1);border:1px solid rgba(200,146,42,0.3);border-radius:12px;padding:20px">
+            <div style="color:#E8B84B;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Recepcja</div>
+            <div style="font-size:1.6rem;font-weight:700;color:#fff">+421 903 437 394</div>
+            <div style="font-size:0.85rem;color:rgba(245,237,224,0.6);margin-top:6px">K dispozícii denne</div>
+          </div>
+          <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="color:rgba(245,237,224,0.6);font-size:0.88rem">Check-in</span>
+              <span style="color:#E8B84B;font-weight:600">od 14:00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="color:rgba(245,237,224,0.6);font-size:0.88rem">Check-out</span>
+              <span style="color:#E8B84B;font-weight:600">do 10:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ===== CANVAS =====
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, scrollProgress = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Stars
+const stars = Array.from({length:200}, () => ({
+  x: Math.random(), y: Math.random(),
+  r: Math.random()*1.8+0.4,
+  speed: Math.random()*0.003+0.001,
+  phase: Math.random()*Math.PI*2,
+  brightness: Math.random()
+}));
+
+// Forest silhouette
+function drawForest(yBase, darkness) {
+  ctx.fillStyle = `rgba(2,8,2,${0.85+darkness*0.1})`;
+  ctx.beginPath();
+  ctx.moveTo(0, yBase);
+  const segments = 28;
+  for(let i=0;i<=segments;i++){
+    const x = (W/segments)*i;
+    const treeH = 80+Math.sin(i*1.7+0.3)*40+Math.sin(i*0.5)*30;
+    // pine shape
+    if(i%3===0){
+      ctx.lineTo(x, yBase-treeH);
+      ctx.lineTo(x+8, yBase-treeH*0.6);
+      ctx.lineTo(x+16, yBase-treeH*0.85);
+      ctx.lineTo(x+24, yBase-treeH*0.5);
+      ctx.lineTo(x+32, yBase-treeH*0.9);
+    } else {
+      ctx.lineTo(x, yBase-treeH);
+    }
+  }
+  ctx.lineTo(W, yBase);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// Building with windows
+function drawBuilding(t) {
+  const bx = W*0.7, by = H*0.72;
+  ctx.fillStyle = 'rgba(15,10,5,0.9)';
+  ctx.fillRect(bx, by-120, 100, 120);
+  // Roof
+  ctx.fillStyle = 'rgba(20,12,5,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(bx-10, by-120);
+  ctx.lineTo(bx+50, by-165);
+  ctx.lineTo(bx+110, by-120);
+  ctx.closePath();
+  ctx.fill();
+  // Windows
+  const wRows = 3, wCols = 2;
+  for(let r=0;r<wRows;r++){
+    for(let c=0;c<wCols;c++){
+      const wx = bx+18+c*32, wy = by-100+r*32;
+      const flicker = 0.5+0.5*Math.sin(t*2.3+r*1.7+c*2.9);
+      ctx.fillStyle = `rgba(255,220,100,${0.35+flicker*0.55})`;
+      ctx.fillRect(wx,wy,16,18);
+    }
+  }
+}
+
+// Aurora
+function drawAurora(t) {
+  const layers = [
+    {color:'rgba(0,200,120,', phase:0},
+    {color:'rgba(100,50,200,', phase:1.2},
+    {color:'rgba(0,150,200,', phase:2.4}
+  ];
+  layers.forEach(l => {
+    ctx.beginPath();
+    ctx.moveTo(0, H*0.25);
+    for(let x=0;x<=W;x+=8){
+      const y = H*(0.18+0.08*Math.sin(x/W*Math.PI*3+t*0.4+l.phase)+0.04*Math.sin(x/W*Math.PI*6+t*0.7));
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,0);ctx.lineTo(0,0);ctx.closePath();
+    const g = ctx.createLinearGradient(0,0,0,H*0.3);
+    g.addColorStop(0,l.color+'0)');
+    g.addColorStop(0.5,l.color+(0.06+0.04*scrollProgress)+')');
+    g.addColorStop(1,l.color+'0)');
+    ctx.fillStyle = g;
+    ctx.fill();
+  });
+}
+
+// Fireflies
+const flies = Array.from({length:40}, () => ({
+  x: Math.random()*1, y: Math.random()*0.5+0.5,
+  vx: (Math.random()-0.5)*0.002, vy: -Math.random()*0.003-0.001,
+  life: Math.random(), maxLife: 1, r: Math.random()*2+1
+}));
+function updateFlies(dt) {
+  flies.forEach(f => {
+    f.x += f.vx; f.y += f.vy; f.life -= dt*0.15;
+    if(f.life <= 0 || f.x < 0 || f.x > 1) {
+      f.x = Math.random(); f.y = Math.random()*0.3+0.7;
+      f.vx = (Math.random()-0.5)*0.002; f.vy = -Math.random()*0.003-0.001;
+      f.life = 1; f.r = Math.random()*2+1;
+    }
+    const a = Math.sin(f.life*Math.PI)*0.8;
+    ctx.beginPath();
+    ctx.arc(f.x*W, f.y*H, f.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(200,240,100,${a})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(f.x*W, f.y*H, f.r*2.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(180,220,80,${a*0.2})`;
+    ctx.fill();
+  });
+}
+
+// Campfire
+let fireParticles = [];
+function spawnFire() {
+  for(let i=0;i<2;i++) {
+    fireParticles.push({
+      x: W*0.5+(Math.random()-0.5)*20,
+      y: H*0.88,
+      vx: (Math.random()-0.5)*1.2,
+      vy: -(Math.random()*3+2),
+      life: 1, r: Math.random()*5+3
+    });
+  }
+}
+function drawFire(dt) {
+  spawnFire();
+  fireParticles = fireParticles.filter(p => p.life > 0);
+  fireParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy*dt*60*0.016; p.life -= dt*2; p.r *= 0.98;
+    const a = p.life;
+    const col = p.life > 0.5 ? `rgba(255,${Math.floor(150+100*p.life)},20,${a*0.9})` : `rgba(200,60,10,${a*0.6})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, Math.max(p.r,0.1), 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+  });
+}
+
+// Meteors
+let meteors = [], lastMeteor = 0;
+function updateMeteors(t) {
+  if(t - lastMeteor > 3) {
+    meteors.push({x:Math.random()*0.7, y:0, len:120, life:1});
+    lastMeteor = t;
+  }
+  meteors = meteors.filter(m => m.life > 0);
+  meteors.forEach(m => {
+    m.x += 0.006; m.y += 0.008; m.life -= 0.025;
+    const g = ctx.createLinearGradient(m.x*W, m.y*H, (m.x*W-m.len), (m.y*H-m.len));
+    g.addColorStop(0,`rgba(255,255,255,${m.life*0.9})`);
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.strokeStyle=g; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(m.x*W, m.y*H);
+    ctx.lineTo(m.x*W-m.len, m.y*H-m.len);
+    ctx.stroke();
+  });
+}
+
+// Moon
+function drawMoon() {
+  const mx = W*0.82, my = H*0.12;
+  const gm = ctx.createRadialGradient(mx,my,0,mx,my,50);
+  gm.addColorStop(0,'rgba(255,240,200,0.95)');
+  gm.addColorStop(0.4,'rgba(255,240,180,0.7)');
+  gm.addColorStop(1,'rgba(255,200,100,0)');
+  ctx.fillStyle=gm;
+  ctx.beginPath(); ctx.arc(mx,my,50,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,245,210,0.95)';
+  ctx.beginPath(); ctx.arc(mx,my,18,0,Math.PI*2); ctx.fill();
+}
+
+let prevT = 0;
+function animate(timestamp) {
+  const t = timestamp/1000;
+  const dt = Math.min(t - prevT, 0.05);
+  prevT = t;
+
+  // Sky color lerp based on scroll
+  const r1=8,g1=4,b1=1, r2=40,g2=20,b2=8;
+  const sr = Math.round(r1+(r2-r1)*scrollProgress);
+  const sg = Math.round(g1+(g2-g1)*scrollProgress);
+  const sb = Math.round(b1+(b2-b1)*scrollProgress);
+  ctx.fillStyle=`rgb(${sr},${sg},${sb})`;
+  ctx.fillRect(0,0,W,H);
+
+  drawMoon();
+  drawAurora(t);
+
+  // Stars
+  stars.forEach(s => {
+    s.phase += s.speed;
+    const a = 0.3+0.5*Math.abs(Math.sin(s.phase))*s.brightness;
+    ctx.fillStyle = `rgba(255,245,230,${a})`;
+    ctx.beginPath();
+    ctx.arc(s.x*W, s.y*H*0.7, s.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  updateMeteors(t);
+
+  // Forest layers
+  drawForest(H*0.92, 0);
+  drawForest(H*0.86, 0.2);
+
+  drawBuilding(t);
+  drawFire(dt);
+  updateFlies(dt);
+
+  // Fog patches
+  for(let i=0;i<3;i++){
+    const fx = ((t*20*((i+1)*0.3)) % (W+200)) - 100;
+    const fy = H*(0.72+i*0.07);
+    const fg = ctx.createRadialGradient(fx,fy,0,fx,fy,120);
+    fg.addColorStop(0,'rgba(200,180,160,0.06)');
+    fg.addColorStop(1,'rgba(200,180,160,0)');
+    ctx.fillStyle=fg;
+    ctx.beginPath();
+    ctx.ellipse(fx,fy,180,40,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ===== SCROLL =====
+window.addEventListener('scroll', () => {
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  scrollProgress = window.scrollY / maxScroll;
+  document.getElementById('progress').style.width = (scrollProgress*100)+'%';
+  if(window.scrollY > 60) document.getElementById('main-nav').classList.add('scrolled');
+  else document.getElementById('main-nav').classList.remove('scrolled');
+});
+
+// ===== SCENES =====
+const sceneMessages = [
+  'Vitajte v GEJDÁKU! 🏔️',
+  'Sme tu od zakladania! 🌲',
+  'Výber aktivít na každý deň 🎯',
+  'Liptov je v nás 💛',
+  'Zavolajte nám! 📞'
+];
+let currentScene = -1;
+
+function setScene(i) {
+  if(currentScene === i) return;
+  if(currentScene >= 0) {
+    document.getElementById('sc'+currentScene).classList.remove('active');
+    document.querySelectorAll('.dot')[currentScene].classList.remove('active');
+  }
+  currentScene = i;
+  document.getElementById('sc'+i).classList.add('active');
+  document.querySelectorAll('.dot')[i].classList.add('active');
+  const bubble = document.getElementById('speech-bubble');
+  bubble.textContent = sceneMessages[i];
+  bubble.style.opacity = '1';
+  bubble.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    bubble.style.opacity = '0';
+    bubble.style.transform = 'translateY(6px)';
+  }, 3000);
+  // Mascot bounce
+  gsap.fromTo('#mascot-svg', {rotation:0, transformOrigin:'50% 100%'}, {rotation:15, duration:0.15, yoyo:true, repeat:5});
+  // Count up on scene 1
+  if(i===1) startCounters();
+}
+
+// Counters
+function startCounters() {
+  document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    let start = 0;
+    const duration = 2000;
+    const startTime = performance.now();
+    function update(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed/duration, 1);
+      const ease = 1-Math.pow(1-progress, 3);
+      el.textContent = Math.round(start + (target-start)*ease);
+      if(progress < 1) requestAnimationFrame(update);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(update);
+  });
+}
+
+// GSAP ScrollTrigger
+[0,1,2,3,4].forEach(i => {
+  ScrollTrigger.create({
+    trigger: '#scene'+i,
+    start: 'top 60%',
+    end: 'bottom 40%',
+    onEnter: () => setScene(i),
+    onEnterBack: () => setScene(i)
+  });
+});
+
+// Init on load
+document.addEventListener('DOMContentLoaded', () => {
+  setScene(0);
+  // Mascot infinite bounce
+  gsap.to('#mascot-wrap', {y: -12, duration:1.4, ease:'sine.inOut', yoyo:true, repeat:-1});
+});
+setScene(0); // fallback
+
+// Nav dots
+document.querySelectorAll('.dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const s = parseInt(dot.dataset.scene);
+    const el = document.getElementById('scene'+s);
+    el.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+// Mascot click
+document.getElementById('mascot-wrap').addEventListener('click', () => {
+  const msgs = ['Liptov čaká! 🏔️','Rezervujte hneď! 📞','Najlepší penzión! ⭐','Bazén zadarmo! 🏊','Vitajte! 😊'];
+  const bubble = document.getElementById('speech-bubble');
+  bubble.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  bubble.style.opacity = '1';
+  bubble.style.transform = 'translateY(0)';
+  gsap.to('#mascot-svg', {rotation:360, duration:0.6, ease:'power2.out', onComplete:()=>{gsap.set('#mascot-svg',{rotation:0})}});
+  setTimeout(() => {bubble.style.opacity='0';bubble.style.transform='translateY(6px)';}, 3000);
+});
+
+// Smooth scroll for nav
+document.querySelector('.btn-outline')?.addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('scene2').scrollIntoView({behavior:'smooth'});
+});
+document.querySelector('.nav-cta')?.addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('scene4').scrollIntoView({behavior:'smooth'});
+});
+</script>
+</body>
+</html>
